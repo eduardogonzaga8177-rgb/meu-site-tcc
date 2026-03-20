@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Comunicação Escolar</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg, #d6ecff, #f0f8ff);
+  text-align: center;
+  margin: 0;
+}
+
+.card {
+  background: white;
+  margin: 20px auto;
+  padding: 20px;
+  max-width: 350px;
+  border-radius: 15px;
+}
+
+input, select {
+  width: 90%;
+  padding: 10px;
+  margin: 10px;
+}
+
+button {
+  width: 90%;
+  padding: 15px;
+  margin: 8px;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+}
+
+.botao {
+  background: #4da6ff;
+  color: white;
+  font-size: 18px;
+}
+
+.secBtn {
+  background: #5cc27d;
+  color: white;
+}
+
+#chat {
+  height: 250px;
+  background: #fff;
+  overflow-y: auto;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.alunoMsg {
+  background: #4da6ff;
+  color: white;
+  margin: 5px;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: right;
+}
+
+.secMsg {
+  background: #5cc27d;
+  color: white;
+  margin: 5px;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.emoji {
+  font-size: 25px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="card" id="login">
+  <h2>Login</h2>
+
+  <input id="nome" placeholder="Nome">
+  <input id="senha" type="password" placeholder="Senha">
+
+  <select id="tipo">
+    <option value="">Tipo</option>
+    <option value="Aluno">Aluno</option>
+    <option value="Secretaria">Secretaria</option>
+  </select>
+
+  <button onclick="entrar()">Entrar</button>
+</div>
+
+<!-- SISTEMA -->
+<div class="card" id="sistema" style="display:none;">
+  <h2 id="titulo"></h2>
+
+  <!-- BOTÕES (só aluno usa) -->
+  <div id="botoesAluno">
+    <button class="botao" onclick="enviar('🆘 Preciso de ajuda')">
+      <span class="emoji">🆘</span> Ajuda
+    </button>
+
+    <button class="botao" onclick="enviar('🚻 Quero ir ao banheiro')">
+      🚻 Banheiro
+    </button>
+
+    <button class="botao" onclick="enviar('🤒 Estou passando mal')">
+      🤒 Mal
+    </button>
+
+    <button class="botao" onclick="enviar('🏠 Quero ir para casa')">
+      🏠 Casa
+    </button>
+  </div>
+
+  <!-- CHAT -->
+  <div id="chat"></div>
+
+  <!-- DIGITAR -->
+  <input id="mensagem" placeholder="Digite mensagem">
+  <button onclick="enviarDigitado()">Enviar</button>
+
+  <button onclick="limpar()">🗑 Limpar</button>
+</div>
+
+<script>
+let nome = "";
+let tipo = "";
+
+// LOGIN
+function entrar() {
+  nome = document.getElementById("nome").value;
+  tipo = document.getElementById("tipo").value;
+
+  if (nome && tipo) {
+    document.getElementById("login").style.display = "none";
+    document.getElementById("sistema").style.display = "block";
+
+    document.getElementById("titulo").innerText = tipo + ": " + nome;
+
+    // Se for secretaria, esconde botões
+    if (tipo === "Secretaria") {
+      document.getElementById("botoesAluno").style.display = "none";
+    }
+
+    atualizar();
+  } else {
+    alert("Preencha tudo!");
+  }
+}
+
+// SALVAR
+function salvar(msg) {
+  let chat = JSON.parse(localStorage.getItem("chat")) || [];
+  chat.push(msg);
+  localStorage.setItem("chat", JSON.stringify(chat));
+}
+
+// CARREGAR
+function carregar() {
+  return JSON.parse(localStorage.getItem("chat")) || [];
+}
+
+// ATUALIZAR CHAT
+function atualizar() {
+  let chatDiv = document.getElementById("chat");
+  chatDiv.innerHTML = "";
+
+  carregar().forEach(m => {
+    let div = document.createElement("div");
+
+    if (m.startsWith("Aluno")) {
+      div.className = "alunoMsg";
+    } else {
+      div.className = "secMsg";
+    }
+
+    div.innerText = m;
+    chatDiv.appendChild(div);
+  });
+}
+
+// VOZ
+function falar(texto) {
+  let voz = new SpeechSynthesisUtterance(texto);
+  voz.lang = "pt-BR";
+  speechSynthesis.speak(voz);
+}
+
+// ENVIAR
+function enviar(texto) {
+  let msg = tipo + " (" + nome + "): " + texto;
+  salvar(msg);
+  falar(texto);
+  atualizar();
+}
+
+// DIGITADO
+function enviarDigitado() {
+  let texto = document.getElementById("mensagem").value;
+
+  if (texto) {
+    enviar(texto);
+    document.getElementById("mensagem").value = "";
+  }
+}
+
+// LIMPAR
+function limpar() {
+  localStorage.removeItem("chat");
+  atualizar();
+}
+
+// AUTO ATUALIZA
+setInterval(atualizar, 1000);
+</script>
+
+</body>
+</html>
