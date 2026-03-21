@@ -99,7 +99,7 @@ button {
     <option value="Secretaria">Secretaria</option>
   </select>
 
-  <button onclick="entrar()">Entrar</button>
+  <button onclick="login()">Entrar</button>
 </div>
 
 <!-- SISTEMA -->
@@ -229,3 +229,30 @@ setInterval(atualizar, 1000);
 
 </body>
 </html>
+
+</body>
+<script>
+function login() {
+  const nome = document.getElementById("nome").value;
+  const senha = document.getElementById("senha").value;
+
+  const nomeSalvo = localStorage.getItem("nome");
+  const senhaSalva = localStorage.getItem("senha");
+
+  // PRIMEIRO ACESSO (cadastro)
+  if (!nomeSalvo && !senhaSalva) {
+    localStorage.setItem("nome", nome);
+    localStorage.setItem("senha", senha);
+    alert("Cadastro realizado!");
+    return;
+  }
+
+  // LOGIN
+  if (nome === nomeSalvo && senha === senhaSalva) {
+    alert("Login correto!");
+    // aqui você pode mostrar o sistema
+  } else {
+    alert("Nome ou senha incorretos!");
+  }
+}
+</script>
