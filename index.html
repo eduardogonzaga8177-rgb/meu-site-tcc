@@ -146,7 +146,12 @@ window.onload = function() {
 };
 
 // LOGIN
-function login() {
+
+
+// FICHA
+function mostrarFicha() {
+  document.getElementById("login").style.display = "none";
+  docfunction login() {
   let nomeInput = document.getElementById("nome").value;
   let senha = document.getElementById("senha").value;
   tipo = document.getElementById("tipo").value;
@@ -163,18 +168,28 @@ function login() {
     usuarios.push({ nome: nomeInput, senha, tipo });
     localStorage.setItem("usuarios", JSON.stringify(usuarios));
     nome = nomeInput;
-    mostrarFicha();
+
+    // 🔥 SE FOR ALUNO → FICHA
+    if (tipo === "Aluno") {
+      mostrarFicha();
+    } else {
+      // 🔥 SE FOR SECRETARIA → VAI DIRETO PRO SISTEMA
+      localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
+      abrirSistema();
+    }
+
     return;
   }
 
   nome = nomeInput;
-  mostrarFicha();
-}
 
-// FICHA
-function mostrarFicha() {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("ficha").style.display = "block";
+  if (tipo === "Aluno") {
+    mostrarFicha();
+  } else {
+    localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
+    abrirSistema();
+  }
+  }ument.getElementById("ficha").style.display = "block";
 }
 
 function salvarFicha() {
