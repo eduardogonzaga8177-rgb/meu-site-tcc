@@ -132,11 +132,23 @@ button {
 <script>
 let nome = "";
 let tipo = "";
+let alunoSelecionado = "";
+let ultimaMsg = "";
+
+// AUTO LOGIN
+window.onload = function() {
+  let user = JSON.parse(localStorage.getItem("usuarioLogado"));
+  if (user) {
+    nome = user.nome;
+    tipo = user.tipo;
+    abrirSistema();
+  }
+};
 
 // LOGIN
 function login() {
-  const nomeInput = document.getElementById("nome").value;
-  const senha = document.getElementById("senha").value;
+  let nomeInput = document.getElementById("nome").value;
+  let senha = document.getElementById("senha").value;
   tipo = document.getElementById("tipo").value;
 
   if (!nomeInput || !senha || !tipo) {
@@ -144,113 +156,170 @@ function login() {
     return;
   }
 
-  nome = nomeInput;
+  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  let usuario = usuarios.find(u => u.nome === nomeInput && u.senha === senha);
 
-  const nomeSalvo = localStorage.getItem("nome");
-  const senhaSalva = localStorage.getItem("senha");
-
-  // PRIMEIRO ACESSO
-  if (!nomeSalvo && !senhaSalva) {
-    localStorage.setItem("nome", nomeInput);
-    localStorage.setItem("senha", senha);
-    alert("Cadastro realizado!");
+  if (!usuario) {
+    usuarios.push({ nome: nomeInput, senha, tipo });
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    nome = nomeInput;
     mostrarFicha();
     return;
   }
 
-  // LOGIN
-  if (nomeInput === nomeSalvo && senha === senhaSalva) {
-    mostrarFicha();
-  } else {
-    alert("Nome ou senha incorretos!");
-  }
+  nome = nomeInput;
+  mostrarFicha();
 }
 
-// MOSTRAR FICHA
+// FICHA
 function mostrarFicha() {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("ficha").style.display = "block";
+  login.style.display = "none";
+  ficha.style.display = "block";
 }
 
-// SALVAR FICHA
 function salvarFicha() {
   let autismo = document.getElementById("autismo").value;
   let grau = document.getElementById("grau").value;
 
-  localStorage.setItem("autismo", autismo);
-  localStorage.setItem("grau", grau);
+  localStorage.setItem("ficha_" + nome, JSON.stringify({autismo, grau}));
+  localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
 
-  document.getElementById("ficha").style.display = "none";
-  document.getElementById("sistema").style.display = "block";
+  abrirSistema();
+}
 
-  document.getElementById("titulo").innerText =
-    tipo + ": " + nome + " | Autista: " + autismo + " | Grau: " + grau;
+// SISTEMA
+function abrirSistema() {
+  ficha.style.display = "none";
+  sistema.style.display = "block";
 
   if (tipo === "Secretaria") {
-    document.getElementById("botoesAluno").style.display = "none";
+    mostrarListaAlunos();
   }
 
   atualizar();
+}
+
+// 🔥 LISTA ORDENADA POR RECENTES
+function mostrarListaAlunos() {
+  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+  let container = document.createElement("div");
+  container.id = "listaAlunos";
+
+  atualizarLista(container);
+
+  document.getElementById("sistema").insertBefore(container, chat);
+
+  // atualiza lista a cada 2s
+  setInterval(() => atualizarLista(container), 2000);
+}
+
+function atualizarLista(container) {
+  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+  let alunos = usuarios.filter(u => u.tipo === "Aluno");
+
+  // ordenar por última mensagem
+  alunos.sort((a, b) => {
+    let chatA = JSON.parse(localStorage.getItem("chat_" + a.nome)) || [];
+    let chatB = JSON.parse(localStorage.getItem("chat_" + b.nome)) || [];
+
+    return chatB.length - chatA.length;
+  });
+
+  container.innerHTML = "<b>Alunos:</b><br>";
+
+  alunos.forEach(a => {
+    let btn = document.createElement("button");
+    btn.innerText = a.nome;
+    btn.onclick = () => {
+      alunoSelecionado = a.nome;
+      atualizar();
+    };
+    container.appendChild(btn);
+  });
 }
 
 // CHAT
 function salvar(msg) {
-  let chat = JSON.parse(localStorage.getItem("chat")) || [];
+  let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
+
+  let key = "chat_" + alvo;
+  let chat = JSON.parse(localStorage.getItem(key)) || [];
+
   chat.push(msg);
-  localStorage.setItem("chat", JSON.stringify(chat));
+  localStorage.setItem(key, JSON.stringify(chat));
 }
 
 function carregar() {
-  return JSON.parse(localStorage.getItem("chat")) || [];
+  let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
+  return JSON.parse(localStorage.getItem("chat_" + alvo)) || [];
 }
 
 function atualizar() {
-  let chatDiv = document.getElementById("chat");
-  chatDiv.innerHTML = "";
+  if (tipo === "Secretaria" && !alunoSelecionado) {
+    chat.innerHTML = "<i>Escolha um aluno</i>";
+    return;
+  }
 
-  carregar().forEach(m => {
+  chat.innerHTML = "";
+
+  let msgs = carregar();
+
+  msgs.forEach(m => {
     let div = document.createElement("div");
-
-    if (m.startsWith("Aluno")) {
-      div.className = "alunoMsg";
-    } else {
-      div.className = "secMsg";
-    }
-
+    div.className = m.includes(nome) ? "alunoMsg" : "secMsg";
     div.innerText = m;
-    chatDiv.appendChild(div);
+    chat.appendChild(div);
   });
+
+  chat.scrollTop = chat.scrollHeight;
+
+  let ultima = msgs[msgs.length - 1];
+
+  if (ultima && ultima !== ultimaMsg) {
+    ultimaMsg = ultima;
+
+    let audio = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+    audio.play();
+
+    if (!ultima.includes(nome)) {
+      let voz = new SpeechSynthesisUtterance(ultima);
+      voz.lang = "pt-BR";
+      speechSynthesis.speak(voz);
+    }
+  }
 }
 
-function falar(texto) {
-  let voz = new SpeechSynthesisUtterance(texto);
-  voz.lang = "pt-BR";
-  speechSynthesis.speak(voz);
-}
-
+// ENVIAR
 function enviar(texto) {
-  let msg = tipo + " (" + nome + "): " + texto;
-  salvar(msg);
-  falar(texto);
+  if (tipo === "Secretaria" && !alunoSelecionado) {
+    alert("Escolha um aluno!");
+    return;
+  }
+
+  salvar(tipo + " (" + nome + "): " + texto);
   atualizar();
 }
 
 function enviarDigitado() {
-  let texto = document.getElementById("mensagem").value;
-
-  if (texto) {
-    enviar(texto);
+  let t = document.getElementById("mensagem").value;
+  if (t) {
+    enviar(t);
     document.getElementById("mensagem").value = "";
   }
 }
 
-function limpar() {
-  localStorage.removeItem("chat");
-  atualizar();
+// TEMA
+function toggleTema() {
+  document.body.classList.toggle("dark");
+}
+
+// LOGOUT
+function logout() {
+  localStorage.removeItem("usuarioLogado");
+  location.reload();
 }
 
 setInterval(atualizar, 1000);
 </script>
-
-</body>
-</html>
