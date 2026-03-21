@@ -9,13 +9,11 @@ body {
   font-family: Arial;
   background: linear-gradient(135deg, #d6ecff, #f0f8ff);
   margin: 0;
-
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
 }
-
 
 .card {
   background: white;
@@ -47,11 +45,6 @@ button {
   font-size: 18px;
 }
 
-.secBtn {
-  background: #5cc27d;
-  color: white;
-}
-
 #chat {
   height: 250px;
   background: #fff;
@@ -77,10 +70,6 @@ button {
   border-radius: 10px;
   text-align: left;
 }
-
-.emoji {
-  font-size: 25px;
-}
 </style>
 </head>
 
@@ -89,7 +78,6 @@ button {
 <!-- LOGIN -->
 <div class="card" id="login">
   <h2>Login</h2>
-
   <input id="nome" placeholder="Nome">
   <input id="senha" type="password" placeholder="Senha">
 
@@ -102,33 +90,39 @@ button {
   <button onclick="login()">Entrar</button>
 </div>
 
+<!-- FICHA -->
+<div class="card" id="ficha" style="display:none;">
+  <h2>Ficha Médica</h2>
+
+  <label>Autista?</label>
+  <select id="autismo">
+    <option>Não</option>
+    <option>Sim</option>
+  </select>
+
+  <label>Grau:</label>
+  <select id="grau">
+    <option>Leve</option>
+    <option>Moderado</option>
+    <option>Severo</option>
+  </select>
+
+  <button onclick="salvarFicha()">Continuar</button>
+</div>
+
 <!-- SISTEMA -->
 <div class="card" id="sistema" style="display:none;">
   <h2 id="titulo"></h2>
 
-  <!-- BOTÕES (só aluno usa) -->
   <div id="botoesAluno">
-    <button class="botao" onclick="enviar('🆘 Preciso de ajuda')">
-      <span class="emoji">🆘</span> Ajuda
-    </button>
-
-    <button class="botao" onclick="enviar('🚻 Quero ir ao banheiro')">
-      🚻 Banheiro
-    </button>
-
-    <button class="botao" onclick="enviar('🤒 Estou passando mal')">
-      🤒 Mal
-    </button>
-
-    <button class="botao" onclick="enviar('🏠 Quero ir para casa')">
-      🏠 Casa
-    </button>
+    <button class="botao" onclick="enviar('🆘 Preciso de ajuda')">🆘 Ajuda</button>
+    <button class="botao" onclick="enviar('🚻 Quero ir ao banheiro')">🚻 Banheiro</button>
+    <button class="botao" onclick="enviar('🤒 Estou passando mal')">🤒 Mal</button>
+    <button class="botao" onclick="enviar('🏠 Quero ir para casa')">🏠 Casa</button>
   </div>
 
-  <!-- CHAT -->
   <div id="chat"></div>
 
-  <!-- DIGITAR -->
   <input id="mensagem" placeholder="Digite mensagem">
   <button onclick="enviarDigitado()">Enviar</button>
 
@@ -140,40 +134,76 @@ let nome = "";
 let tipo = "";
 
 // LOGIN
-function entrar() {
-  nome = document.getElementById("nome").value;
+function login() {
+  const nomeInput = document.getElementById("nome").value;
+  const senha = document.getElementById("senha").value;
   tipo = document.getElementById("tipo").value;
 
-  if (nome && tipo) {
-    document.getElementById("login").style.display = "none";
-    document.getElementById("sistema").style.display = "block";
-
-    document.getElementById("titulo").innerText = tipo + ": " + nome;
-
-    // Se for secretaria, esconde botões
-    if (tipo === "Secretaria") {
-      document.getElementById("botoesAluno").style.display = "none";
-    }
-
-    atualizar();
-  } else {
+  if (!nomeInput || !senha || !tipo) {
     alert("Preencha tudo!");
+    return;
+  }
+
+  nome = nomeInput;
+
+  const nomeSalvo = localStorage.getItem("nome");
+  const senhaSalva = localStorage.getItem("senha");
+
+  // PRIMEIRO ACESSO
+  if (!nomeSalvo && !senhaSalva) {
+    localStorage.setItem("nome", nomeInput);
+    localStorage.setItem("senha", senha);
+    alert("Cadastro realizado!");
+    mostrarFicha();
+    return;
+  }
+
+  // LOGIN
+  if (nomeInput === nomeSalvo && senha === senhaSalva) {
+    mostrarFicha();
+  } else {
+    alert("Nome ou senha incorretos!");
   }
 }
 
-// SALVAR
+// MOSTRAR FICHA
+function mostrarFicha() {
+  document.getElementById("login").style.display = "none";
+  document.getElementById("ficha").style.display = "block";
+}
+
+// SALVAR FICHA
+function salvarFicha() {
+  let autismo = document.getElementById("autismo").value;
+  let grau = document.getElementById("grau").value;
+
+  localStorage.setItem("autismo", autismo);
+  localStorage.setItem("grau", grau);
+
+  document.getElementById("ficha").style.display = "none";
+  document.getElementById("sistema").style.display = "block";
+
+  document.getElementById("titulo").innerText =
+    tipo + ": " + nome + " | Autista: " + autismo + " | Grau: " + grau;
+
+  if (tipo === "Secretaria") {
+    document.getElementById("botoesAluno").style.display = "none";
+  }
+
+  atualizar();
+}
+
+// CHAT
 function salvar(msg) {
   let chat = JSON.parse(localStorage.getItem("chat")) || [];
   chat.push(msg);
   localStorage.setItem("chat", JSON.stringify(chat));
 }
 
-// CARREGAR
 function carregar() {
   return JSON.parse(localStorage.getItem("chat")) || [];
 }
 
-// ATUALIZAR CHAT
 function atualizar() {
   let chatDiv = document.getElementById("chat");
   chatDiv.innerHTML = "";
@@ -192,14 +222,12 @@ function atualizar() {
   });
 }
 
-// VOZ
 function falar(texto) {
   let voz = new SpeechSynthesisUtterance(texto);
   voz.lang = "pt-BR";
   speechSynthesis.speak(voz);
 }
 
-// ENVIAR
 function enviar(texto) {
   let msg = tipo + " (" + nome + "): " + texto;
   salvar(msg);
@@ -207,7 +235,6 @@ function enviar(texto) {
   atualizar();
 }
 
-// DIGITADO
 function enviarDigitado() {
   let texto = document.getElementById("mensagem").value;
 
@@ -217,42 +244,13 @@ function enviarDigitado() {
   }
 }
 
-// LIMPAR
 function limpar() {
   localStorage.removeItem("chat");
   atualizar();
 }
 
-// AUTO ATUALIZA
 setInterval(atualizar, 1000);
 </script>
 
 </body>
 </html>
-
-</body>
-<script>
-function login() {
-  const nome = document.getElementById("nome").value;
-  const senha = document.getElementById("senha").value;
-
-  const nomeSalvo = localStorage.getItem("nome");
-  const senhaSalva = localStorage.getItem("senha");
-
-  // PRIMEIRO ACESSO (cadastro)
-  if (!nomeSalvo && !senhaSalva) {
-    localStorage.setItem("nome", nome);
-    localStorage.setItem("senha", senha);
-    alert("Cadastro realizado!");
-    return;
-  }
-
-  // LOGIN
-  if (nome === nomeSalvo && senha === senhaSalva) {
-    alert("Login correto!");
-    // aqui você pode mostrar o sistema
-  } else {
-    alert("Nome ou senha incorretos!");
-  }
-}
-</script>
