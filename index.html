@@ -156,16 +156,22 @@ window.onload = () => {
 
 // LOGIN
 function login() {
-  let nomeInput = nomeEl().value;
-  let senha = senhaEl().value;
-  tipo = tipoEl().value;
+  let nomeInput = document.getElementById("nome").value;
+  let senha = document.getElementById("senha").value;
+  let tipoSelecionado = document.getElementById("tipo").value;
 
-  if (!nomeInput || !senha || !tipo) return alert("Preencha tudo!");
+  if (!nomeInput || !senha || !tipoSelecionado) {
+    alert("Preencha tudo!");
+    return;
+  }
 
+  tipo = tipoSelecionado;
+
+  // SECRETARIA
   if (tipo === "Secretaria") {
     if (nomeInput === SECRETARIA_LOGIN && senha === SECRETARIA_SENHA) {
       nome = nomeInput;
-      salvarLogin();
+      localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
       abrirSistema();
     } else {
       alert("Acesso negado!");
@@ -173,6 +179,7 @@ function login() {
     return;
   }
 
+  // ALUNO
   let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
   let user = usuarios.find(u => u.nome === nomeInput && u.senha === senha);
 
@@ -185,6 +192,7 @@ function login() {
   mostrarFicha();
 }
 
+  
 // FICHA
 function mostrarFicha() {
   if (tipo !== "Aluno") return;
