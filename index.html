@@ -279,6 +279,21 @@ function carregar() {
   let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
   return JSON.parse(localStorage.getItem("chat_" + alvo)) || [];
 }
+ 
+function atualizar() {
+  let chatDiv = document.getElementById("chat");
+
+  if (tipo === "Secretaria" && !alunoSelecionado) {
+    chatDiv.innerHTML = "<i>Escolha um aluno</i>";
+    return;
+  }
+
+  chatDiv.innerHTML = "";
+
+  let msgs = carregar();
+
+  msgs.forEach(m => {
+    let div = docfunction atualizarLista(container) {
   let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
   let alunos = usuarios.filter(u => u.tipo === "Aluno");
 
@@ -297,13 +312,11 @@ function carregar() {
 
     let temNotif = notificacoes[a.nome];
 
-    // 🔴 mostra bolinha se tiver mensagem nova
     btn.innerHTML = a.nome + (temNotif ? " 🔴" : "");
 
     btn.onclick = () => {
       alunoSelecionado = a.nome;
 
-      // remove notificação ao abrir
       notificacoes[a.nome] = false;
       localStorage.setItem("notificacoes", JSON.stringify(notificacoes));
 
@@ -312,22 +325,7 @@ function carregar() {
 
     container.appendChild(btn);
   });
-}
-
-function atualizar() {
-  let chatDiv = document.getElementById("chat");
-
-  if (tipo === "Secretaria" && !alunoSelecionado) {
-    chatDiv.innerHTML = "<i>Escolha um aluno</i>";
-    return;
-  }
-
-  chatDiv.innerHTML = "";
-
-  let msgs = carregar();
-
-  msgs.forEach(m => {
-    let div = document.createElement("div");
+    }ument.createElement("div");
     div.className = m.includes(nome) ? "alunoMsg" : "secMsg";
     div.innerText = m;
     chatDiv.appendChild(div);
