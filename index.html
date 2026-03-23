@@ -120,6 +120,9 @@ button {
 <div class="card" id="sistema" style="display:none;">
   <h2 id="titulo"></h2>
 
+<button onclick="logout()">🚪 Sair</button>
+
+
   <div id="botoesAluno">
     <button class="botao" onclick="enviar('🆘 Preciso de ajuda')">🆘 Ajuda</button>
     <button class="botao" onclick="enviar('🚻 Quero ir ao banheiro')">🚻 Banheiro</button>
@@ -320,6 +323,27 @@ function salvarLogin(){
 }
 
 setInterval(atualizar, 1000);
+
+
+
+function logout() {
+  localStorage.removeItem("usuarioLogado");
+
+  nome = "";
+  tipo = "";
+  alunoSelecionado = "";
+
+  // limpa inputs
+  nomeEl().value = "";
+  senhaEl().value = "";
+  tipoEl().value = "";
+
+  sistemaDiv().style.display = "none";
+  fichaDiv().style.display = "none";
+  loginDiv().style.display = "block";
+}
+
+  
 
 </script>
 
