@@ -46,33 +46,42 @@ button {
 }
 
 #chat {
-  height: 250px;
-  background: #fff;
+  height: 300px;
+  background: #e5ddd5;
   overflow-y: auto;
   border-radius: 10px;
   padding: 10px;
 }
 
 .alunoMsg {
-  background: #4da6ff;
-  color: white;
+  background: #dcf8c6;
+  color: black;
   margin: 5px;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 10px 10px 0 10px;
   text-align: right;
+  max-width: 70%;
+  margin-left: auto;
 }
 
 .secMsg {
-  background: #5cc27d;
-  color: white;
+  background: #ffffff;
+  color: black;
   margin: 5px;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: 10px 10px 10px 0;
   text-align: left;
+  max-width: 70%;
+  margin-right: auto;
+  border: 1px solid #ddd;
 }
 </style>
 </head>
-
+  
+<audio id="somMsg">
+  <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg">
+</audio>
+  
 <body>
 
 <!-- LOGIN -->
@@ -245,9 +254,34 @@ function mostrarListaAlunos() {
 }
 
 // ORDENAR POR MAIS RECENTE
-function atualizarLista(container) {
+
+
+// CHAT
+function salvar(msg) {
+  let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
+
+  let key = "chat_" + alvo;
+  let chat = JSON.parse(localStorage.getItem(key)) || [];
+
+  chat.push(msg);
+  localStorage.setItem(key, JSON.stringify(chat));
+
+  // 🔔 tocar som
+  document.getElementById("somMsg").play();
+
+  // notificação
+  if (tipo === "Aluno") {
+    localStorage.setItem("notificacao", "Nova mensagem de " + nome);
+  }
+}
+
+function carregar() {
+  let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
+  return JSON.parse(localStorage.getItem("function atualizarLista(container) {
   let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
   let alunos = usuarios.filter(u => u.tipo === "Aluno");
+
+  let notificacoes = JSON.parse(localStorage.getItem("notificacoes")) || {};
 
   alunos.sort((a, b) => {
     let chatA = JSON.parse(localStorage.getItem("chat_" + a.nome)) || [];
@@ -259,29 +293,27 @@ function atualizarLista(container) {
 
   alunos.forEach(a => {
     let btn = document.createElement("button");
-    btn.innerText = a.nome;
+
+    let temNotif = notificacoes[a.nome];
+
+    // 🔴 mostra bolinha se tiver mensagem nova
+    btn.innerHTML = a.nome + (temNotif ? " 🔴" : "");
+
     btn.onclick = () => {
       alunoSelecionado = a.nome;
+
+      // remove notificação ao abrir
+      notificacoes[a.nome] = false;
+      localStorage.setItem("notificacoes", JSON.stringify(notificacoes));
+
       atualizar();
     };
+
     container.appendChild(btn);
   });
 }
-
-// CHAT
-function salvar(msg) {
-  let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
-
-  let key = "chat_" + alvo;
-  let chat = JSON.parse(localStorage.getItem(key)) || [];
-
-  chat.push(msg);
-  localStorage.setItem(key, JSON.stringify(chat));
-}
-
-function carregar() {
-  let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
-  return JSON.parse(localStorage.getItem("chat_" + alvo)) || [];
+  
+}chat_" + alvo)) || [];
 }
 
 function atualizar() {
