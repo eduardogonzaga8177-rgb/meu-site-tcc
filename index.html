@@ -55,7 +55,6 @@ button {
 
 .alunoMsg {
   background: #dcf8c6;
-  color: black;
   margin: 5px;
   padding: 10px;
   border-radius: 10px 10px 0 10px;
@@ -65,24 +64,22 @@ button {
 }
 
 .secMsg {
-  background: #ffffff;
-  color: black;
+  background: #fff;
   margin: 5px;
   padding: 10px;
   border-radius: 10px 10px 10px 0;
-  text-align: left;
   max-width: 70%;
   margin-right: auto;
   border: 1px solid #ddd;
 }
 </style>
 </head>
-  
-<audio id="somMsg">
-  <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg">
-</audio>
-  
+
 <body>
+
+<audio id="somMsg">
+  <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3">
+</audio>
 
 <!-- LOGIN -->
 <div class="card" id="login">
@@ -130,33 +127,25 @@ button {
     <button class="botao" onclick="enviar('🏠 Quero ir para casa')">🏠 Casa</button>
   </div>
 
+  <div id="listaAlunos"></div>
   <div id="chat"></div>
 
   <input id="mensagem" placeholder="Digite mensagem">
   <button onclick="enviarDigitado()">Enviar</button>
-
   <button onclick="limpar()">🗑 Limpar</button>
 </div>
 
-  <script>
+<script>
 
 const SECRETARIA_LOGIN = "adm_secretaria";
 const SECRETARIA_SENHA = "secretaria123";
 
-
-
-
-
-
-
-    
 let nome = "";
 let tipo = "";
 let alunoSelecionado = "";
-let ultimaMsg = "";
 
 // AUTO LOGIN
-window.onload = function() {
+window.onload = () => {
   let user = JSON.parse(localStorage.getItem("usuarioLogado"));
   if (user) {
     nome = user.nome;
@@ -167,190 +156,139 @@ window.onload = function() {
 
 // LOGIN
 function login() {
-  let nomeInput = document.getElementById("nome").value;
-  let senha = document.getElementById("senha").value;
-  tipo = document.getElementById("tipo").value;
+  let nomeInput = nomeEl().value;
+  let senha = senhaEl().value;
+  tipo = tipoEl().value;
 
-  if (!nomeInput || !senha || !tipo) {
-    alert("Preencha tudo!");
-    return;
-  }
+  if (!nomeInput || !senha || !tipo) return alert("Preencha tudo!");
 
-  // 🔒 VERIFICAÇÃO DA SECRETARIA
   if (tipo === "Secretaria") {
     if (nomeInput === SECRETARIA_LOGIN && senha === SECRETARIA_SENHA) {
       nome = nomeInput;
-      localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
+      salvarLogin();
       abrirSistema();
     } else {
-      alert("Acesso negado! Só a secretaria pode entrar.");
+      alert("Acesso negado!");
     }
     return;
   }
 
-  // 👇 resto continua normal para alunos
   let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-  let usuario = usuarios.find(u => u.nome === nomeInput && u.senha === senha);
+  let user = usuarios.find(u => u.nome === nomeInput && u.senha === senha);
 
-  if (!usuario) {
+  if (!user) {
     usuarios.push({ nome: nomeInput, senha, tipo });
     localStorage.setItem("usuarios", JSON.stringify(usuarios));
-    nome = nomeInput;
-
-    mostrarFicha();
-    return;
   }
 
   nome = nomeInput;
   mostrarFicha();
 }
 
-
-// ✅ FUNÇÃO QUE VOCÊ PEDIU (CORRETA)
+// FICHA
 function mostrarFicha() {
   if (tipo !== "Aluno") return;
-
-  document.getElementById("login").style.display = "none";
-  document.getElementById("ficha").style.display = "block";
+  loginDiv().style.display = "none";
+  fichaDiv().style.display = "block";
 }
 
-// SALVAR FICHA
 function salvarFicha() {
   let autismo = document.getElementById("autismo").value;
   let grau = document.getElementById("grau").value;
 
   localStorage.setItem("ficha_" + nome, JSON.stringify({autismo, grau}));
-  localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
-
+  salvarLogin();
   abrirSistema();
 }
 
 // SISTEMA
 function abrirSistema() {
-  document.getElementById("login").style.display = "none";
-  document.getElementById("ficha").style.display = "none";
-  document.getElementById("sistema").style.display = "block";
+  loginDiv().style.display = "none";
+  fichaDiv().style.display = "none";
+  sistemaDiv().style.display = "block";
 
   if (tipo === "Secretaria") {
-    document.getElementById("botoesAluno").style.display = "none";
-    mostrarListaAlunos();
-  } else {
-    document.getElementById("botoesAluno").style.display = "block";
+    botoesAluno().style.display = "none";
+    setInterval(atualizarLista, 2000);
   }
 
   atualizar();
 }
 
-// LISTA DE ALUNOS
-function mostrarListaAlunos() {
-  let container = document.createElement("div");
-  container.id = "listaAlunos";
+// LISTA
+function atualizarLista() {
+  let lista = document.getElementById("listaAlunos");
+  lista.innerHTML = "<b>Alunos:</b><br>";
 
-  atualizarLista(container);
+  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  let alunos = usuarios.filter(u => u.tipo === "Aluno");
 
-  document.getElementById("sistema").insertBefore(container, document.getElementById("chat"));
+  alunos.forEach(a => {
+    let btn = document.createElement("button");
+    btn.innerText = a.nome;
 
-  setInterval(() => atualizarLista(container), 2000);
+    btn.onclick = () => {
+      alunoSelecionado = a.nome;
+      atualizar();
+    };
+
+    lista.appendChild(btn);
+  });
 }
-
-// ORDENAR POR MAIS RECENTE
-
 
 // CHAT
 function salvar(msg) {
   let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
-
   let key = "chat_" + alvo;
+
   let chat = JSON.parse(localStorage.getItem(key)) || [];
-
   chat.push(msg);
+
   localStorage.setItem(key, JSON.stringify(chat));
-
-  // 🔔 tocar som
   document.getElementById("somMsg").play();
-
-  // notificação
-  if (tipo === "Aluno") {
-    localStorage.setItem("notificacao", "Nova mensagem de " + nome);
-  }
 }
 
 function carregar() {
   let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
   return JSON.parse(localStorage.getItem("chat_" + alvo)) || [];
 }
- 
+
 function atualizar() {
-  let chatDiv = document.getElementById("chat");
+  let chat = chatDiv();
 
   if (tipo === "Secretaria" && !alunoSelecionado) {
-    chatDiv.innerHTML = "<i>Escolha um aluno</i>";
+    chat.innerHTML = "<i>Escolha um aluno</i>";
     return;
   }
 
-  chatDiv.innerHTML = "";
+  chat.innerHTML = "";
 
-  let msgs = carregar();
-
-  msgs.forEach(m => {
-    let div = docfunction atualizarLista(container) {
-  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-  let alunos = usuarios.filter(u => u.tipo === "Aluno");
-
-  let notificacoes = JSON.parse(localStorage.getItem("notificacoes")) || {};
-
-  alunos.sort((a, b) => {
-    let chatA = JSON.parse(localStorage.getItem("chat_" + a.nome)) || [];
-    let chatB = JSON.parse(localStorage.getItem("chat_" + b.nome)) || [];
-    return chatB.length - chatA.length;
-  });
-
-  container.innerHTML = "<b>Alunos:</b><br>";
-
-  alunos.forEach(a => {
-    let btn = document.createElement("button");
-
-    let temNotif = notificacoes[a.nome];
-
-    btn.innerHTML = a.nome + (temNotif ? " 🔴" : "");
-
-    btn.onclick = () => {
-      alunoSelecionado = a.nome;
-
-      notificacoes[a.nome] = false;
-      localStorage.setItem("notificacoes", JSON.stringify(notificacoes));
-
-      atualizar();
-    };
-
-    container.appendChild(btn);
-  });
-    }ument.createElement("div");
+  carregar().forEach(m => {
+    let div = document.createElement("div");
     div.className = m.includes(nome) ? "alunoMsg" : "secMsg";
     div.innerText = m;
-    chatDiv.appendChild(div);
+    chat.appendChild(div);
   });
 
-  chatDiv.scrollTop = chatDiv.scrollHeight;
+  chat.scrollTop = chat.scrollHeight;
 }
 
 // ENVIAR
-function enviar(texto) {
+function enviar(txt) {
   if (tipo === "Secretaria" && !alunoSelecionado) {
-    alert("Escolha um aluno!");
-    return;
+    return alert("Escolha um aluno!");
   }
 
-  salvar(tipo + " (" + nome + "): " + texto);
+  salvar(tipo + " (" + nome + "): " + txt);
   atualizar();
 }
 
 function enviarDigitado() {
-  let t = document.getElementById("mensagem").value;
-  if (t) {
-    enviar(t);
-    document.getElementById("mensagem").value = "";
-  }
+  let msg = document.getElementById("mensagem").value;
+  if (!msg) return;
+
+  enviar(msg);
+  document.getElementById("mensagem").value = "";
 }
 
 // LIMPAR
@@ -360,11 +298,22 @@ function limpar() {
   atualizar();
 }
 
-// LOGOUT
-function logout() {
-  localStorage.removeItem("usuarioLogado");
-  location.reload();
+// HELPERS
+function nomeEl(){return document.getElementById("nome")}
+function senhaEl(){return document.getElementById("senha")}
+function tipoEl(){return document.getElementById("tipo")}
+function loginDiv(){return document.getElementById("login")}
+function fichaDiv(){return document.getElementById("ficha")}
+function sistemaDiv(){return document.getElementById("sistema")}
+function chatDiv(){return document.getElementById("chat")}
+function botoesAluno(){return document.getElementById("botoesAluno")}
+function salvarLogin(){
+  localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
 }
 
 setInterval(atualizar, 1000);
-  </script>
+
+</script>
+
+</body>
+</html>
