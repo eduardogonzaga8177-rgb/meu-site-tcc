@@ -277,7 +277,8 @@ function salvar(msg) {
 
 function carregar() {
   let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
-  return JSON.parse(localStorage.getItem("function atualizarLista(container) {
+  return JSON.parse(localStorage.getItem("chat_" + alvo)) || [];
+}
   let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
   let alunos = usuarios.filter(u => u.tipo === "Aluno");
 
