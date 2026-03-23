@@ -1,13 +1,10 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!DOCTYPE html><html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Comunicação Escolar</title>
-
-<style>
+<title>Comunicação Escolar</title><style>
 body {
-  font-family: Arial;
-  background: linear-gradient(135deg, #d6ecff, #f0f8ff);
+  font-family: Arial, sans-serif;
+  background: #111b21;
   margin: 0;
   display: flex;
   justify-content: center;
@@ -16,129 +13,127 @@ body {
 }
 
 .card {
-  background: white;
-  padding: 30px;
-  width: 90%;
-  max-width: 400px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  background: #0b141a;
+  padding: 20px;
+  width: 95%;
+  max-width: 420px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  color: white;
+}
+
+h2 {
+  text-align: center;
 }
 
 input, select {
-  width: 90%;
-  padding: 10px;
-  margin: 10px;
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: #202c33;
+  color: white;
 }
 
 button {
-  width: 90%;
-  padding: 15px;
-  margin: 8px;
-  border-radius: 10px;
+  width: 100%;
+  padding: 16px;
+  margin: 6px 0;
+  border-radius: 12px;
   border: none;
-  font-size: 16px;
+  font-size: 17px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.85;
 }
 
 .botao {
-  background: #4da6ff;
+  background: #25d366;
   color: white;
-  font-size: 18px;
+  font-weight: bold;
 }
 
 #chat {
   height: 300px;
-  background: #e5ddd5;
+  background: #111b21;
   overflow-y: auto;
   border-radius: 10px;
   padding: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .alunoMsg {
-  background: #dcf8c6;
+  background: #005c4b;
+  color: white;
   margin: 5px;
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 10px 10px 0 10px;
-  text-align: right;
-  max-width: 70%;
-  margin-left: auto;
+  align-self: flex-end;
+  max-width: 75%;
 }
 
 .secMsg {
-  background: #fff;
+  background: #202c33;
   margin: 5px;
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 10px 10px 10px 0;
-  max-width: 70%;
-  margin-right: auto;
-  border: 1px solid #ddd;
+  align-self: flex-start;
+  max-width: 75%;
 }
-</style>
-</head>
 
-<body>
+#listaAlunos button {
+  background: #202c33;
+  color: white;
+  margin: 4px 0;
+}
 
-<audio id="somMsg">
+#topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.logout {
+  background: #ff3b30;
+}
+
+</style></head><body><audio id="somMsg">
   <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3">
-</audio>
-
-<!-- LOGIN -->
-<div class="card" id="login">
+</audio><div class="card" id="login">
   <h2>Login</h2>
   <input id="nome" placeholder="Nome">
-  <input id="senha" type="password" placeholder="Senha">
-
-  <select id="tipo">
+  <input id="senha" type="password" placeholder="Senha">  <select id="tipo">
     <option value="">Tipo</option>
     <option value="Aluno">Aluno</option>
     <option value="Secretaria">Secretaria</option>
-  </select>
+  </select><button class="botao" onclick="login()">Entrar</button>
 
-  <button onclick="login()">Entrar</button>
-</div>
+</div><div class="card" id="ficha" style="display:none;">
+  <h2>Ficha Médica</h2><label>Autista?</label> <select id="autismo"> <option>Não</option> <option>Sim</option> </select>
 
-<!-- FICHA -->
-<div class="card" id="ficha" style="display:none;">
-  <h2>Ficha Médica</h2>
+<label>Grau:</label> <select id="grau"> <option>Leve</option> <option>Moderado</option> <option>Severo</option> </select>
 
-  <label>Autista?</label>
-  <select id="autismo">
-    <option>Não</option>
-    <option>Sim</option>
-  </select>
+<button class="botao" onclick="salvarFicha()">Continuar</button>
 
-  <label>Grau:</label>
-  <select id="grau">
-    <option>Leve</option>
-    <option>Moderado</option>
-    <option>Severo</option>
-  </select>
-
-  <button onclick="salvarFicha()">Continuar</button>
-</div>
-
-<!-- SISTEMA -->
-<div class="card" id="sistema" style="display:none;">
-  <h2 id="titulo"></h2>
-
-<button onclick="logout()">🚪 Sair</button>
-
-
-  <div id="botoesAluno">
+</div><div class="card" id="sistema" style="display:none;"><div id="topo">
+  <h3 id="titulo"></h3>
+  <button class="logout" onclick="logout()">Sair</button>
+</div>  <div id="botoesAluno">
     <button class="botao" onclick="enviar('🆘 Preciso de ajuda')">🆘 Ajuda</button>
     <button class="botao" onclick="enviar('🚻 Quero ir ao banheiro')">🚻 Banheiro</button>
     <button class="botao" onclick="enviar('🤒 Estou passando mal')">🤒 Mal</button>
     <button class="botao" onclick="enviar('🏠 Quero ir para casa')">🏠 Casa</button>
-  </div>
-
-  <div id="listaAlunos"></div>
-  <div id="chat"></div>
-
-  <input id="mensagem" placeholder="Digite mensagem">
-  <button onclick="enviarDigitado()">Enviar</button>
+  </div>  <div id="listaAlunos"></div>  <div id="chat"></div>  <input id="mensagem" placeholder="Digite mensagem">
+  <button class="botao" onclick="enviarDigitado()">Enviar</button>
   <button onclick="limpar()">🗑 Limpar</button>
-</div>
-
-<script>
+</div><script>
 
 const SECRETARIA_LOGIN = "adm_secretaria";
 const SECRETARIA_SENHA = "secretaria123";
@@ -147,7 +142,6 @@ let nome = "";
 let tipo = "";
 let alunoSelecionado = "";
 
-// AUTO LOGIN
 window.onload = () => {
   let user = JSON.parse(localStorage.getItem("usuarioLogado"));
   if (user) {
@@ -157,7 +151,6 @@ window.onload = () => {
   }
 };
 
-// LOGIN
 function login() {
   let nomeInput = document.getElementById("nome").value;
   let senha = document.getElementById("senha").value;
@@ -170,11 +163,10 @@ function login() {
 
   tipo = tipoSelecionado;
 
-  // SECRETARIA
   if (tipo === "Secretaria") {
     if (nomeInput === SECRETARIA_LOGIN && senha === SECRETARIA_SENHA) {
       nome = nomeInput;
-      localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
+      salvarLogin();
       abrirSistema();
     } else {
       alert("Acesso negado!");
@@ -182,7 +174,6 @@ function login() {
     return;
   }
 
-  // ALUNO
   let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
   let user = usuarios.find(u => u.nome === nomeInput && u.senha === senha);
 
@@ -195,10 +186,7 @@ function login() {
   mostrarFicha();
 }
 
-  
-// FICHA
 function mostrarFicha() {
-  if (tipo !== "Aluno") return;
   loginDiv().style.display = "none";
   fichaDiv().style.display = "block";
 }
@@ -212,11 +200,12 @@ function salvarFicha() {
   abrirSistema();
 }
 
-// SISTEMA
 function abrirSistema() {
   loginDiv().style.display = "none";
   fichaDiv().style.display = "none";
   sistemaDiv().style.display = "block";
+
+  document.getElementById("titulo").innerText = nome;
 
   if (tipo === "Secretaria") {
     botoesAluno().style.display = "none";
@@ -226,10 +215,9 @@ function abrirSistema() {
   atualizar();
 }
 
-// LISTA
 function atualizarLista() {
   let lista = document.getElementById("listaAlunos");
-  lista.innerHTML = "<b>Alunos:</b><br>";
+  lista.innerHTML = "<b>Alunos:</b>";
 
   let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
   let alunos = usuarios.filter(u => u.tipo === "Aluno");
@@ -247,7 +235,6 @@ function atualizarLista() {
   });
 }
 
-// CHAT
 function salvar(msg) {
   let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
   let key = "chat_" + alvo;
@@ -284,10 +271,10 @@ function atualizar() {
   chat.scrollTop = chat.scrollHeight;
 }
 
-// ENVIAR
 function enviar(txt) {
   if (tipo === "Secretaria" && !alunoSelecionado) {
-    return alert("Escolha um aluno!");
+    alert("Escolha um aluno!");
+    return;
   }
 
   salvar(tipo + " (" + nome + "): " + txt);
@@ -302,17 +289,17 @@ function enviarDigitado() {
   document.getElementById("mensagem").value = "";
 }
 
-// LIMPAR
 function limpar() {
   let alvo = tipo === "Secretaria" ? alunoSelecionado : nome;
   localStorage.removeItem("chat_" + alvo);
   atualizar();
 }
 
-// HELPERS
-function nomeEl(){return document.getElementById("nome")}
-function senhaEl(){return document.getElementById("senha")}
-function tipoEl(){return document.getElementById("tipo")}
+function logout() {
+  localStorage.removeItem("usuarioLogado");
+  location.reload();
+}
+
 function loginDiv(){return document.getElementById("login")}
 function fichaDiv(){return document.getElementById("ficha")}
 function sistemaDiv(){return document.getElementById("sistema")}
@@ -324,28 +311,5 @@ function salvarLogin(){
 
 setInterval(atualizar, 1000);
 
-
-
-function logout() {
-  localStorage.removeItem("usuarioLogado");
-
-  nome = "";
-  tipo = "";
-  alunoSelecionado = "";
-
-  // limpa inputs
-  nomeEl().value = "";
-  senhaEl().value = "";
-  tipoEl().value = "";
-
-  sistemaDiv().style.display = "none";
-  fichaDiv().style.display = "none";
-  loginDiv().style.display = "block";
-}
-
-  
-
-</script>
-
-</body>
+</script></body>
 </html>
