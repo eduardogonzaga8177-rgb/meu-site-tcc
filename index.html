@@ -130,6 +130,17 @@ button {
 </div>
 
   <script>
+
+const SECRETARIA_LOGIN = "adm_secretaria";
+const SECRETARIA_SENHA = "secretaria123";
+
+
+
+
+
+
+
+    
 let nome = "";
 let tipo = "";
 let alunoSelecionado = "";
@@ -156,6 +167,19 @@ function login() {
     return;
   }
 
+  // 🔒 VERIFICAÇÃO DA SECRETARIA
+  if (tipo === "Secretaria") {
+    if (nomeInput === SECRETARIA_LOGIN && senha === SECRETARIA_SENHA) {
+      nome = nomeInput;
+      localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
+      abrirSistema();
+    } else {
+      alert("Acesso negado! Só a secretaria pode entrar.");
+    }
+    return;
+  }
+
+  // 👇 resto continua normal para alunos
   let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
   let usuario = usuarios.find(u => u.nome === nomeInput && u.senha === senha);
 
@@ -164,24 +188,14 @@ function login() {
     localStorage.setItem("usuarios", JSON.stringify(usuarios));
     nome = nomeInput;
 
-    if (tipo === "Aluno") {
-      mostrarFicha(); // 👈 aqui chama a ficha
-    } else {
-      localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
-      abrirSistema();
-    }
+    mostrarFicha();
     return;
   }
 
   nome = nomeInput;
-
-  if (tipo === "Aluno") {
-    mostrarFicha(); // 👈 aqui também
-  } else {
-    localStorage.setItem("usuarioLogado", JSON.stringify({nome, tipo}));
-    abrirSistema();
-  }
+  mostrarFicha();
 }
+
 
 // ✅ FUNÇÃO QUE VOCÊ PEDIU (CORRETA)
 function mostrarFicha() {
